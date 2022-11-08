@@ -13,8 +13,8 @@ public class Client implements Runnable {
     @Override
     public void run() {
         try {
-            client = new Socket("192.168.1.5",9999);
-            out = new PrintWriter(client.getOutputStream(),true);
+            client = new Socket("192.168.1.5", 9999);
+            out = new PrintWriter(client.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
             InputHandler inputHandler = new InputHandler();
@@ -22,48 +22,44 @@ public class Client implements Runnable {
             t.start();
 
             String inMessage;
-            while ((inMessage = in.readLine()) != null){
+            while ((inMessage = in.readLine()) != null) {
                 System.out.println(inMessage);
             }
 
-        } catch (IOException e){
+        } catch (IOException e) {
             shutdown();
         }
     }
 
-    public void shutdown(){
+    public void shutdown() {
         done = true;
         try {
             in.close();
             out.close();
-            if (!client.isClosed()){
+            if (!client.isClosed()) {
                 client.close();
             }
-        } catch (IOException e){
-
+        } catch (IOException e) {
+            System.err.println("Something went wrong :(");
         }
 
     }
 
-    class InputHandler implements Runnable{
-
-
+    class InputHandler implements Runnable {
         @Override
         public void run() {
             try {
                 BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
-                while (!done){
+                while (!done) {
                     String message = inReader.readLine();
-                    if (message.equals("/quit")){
-                        out.print(message);
+                    if (message.equals("/quit ")) {
                         inReader.close();
                         shutdown();
                     } else {
                         out.println(message);
                     }
-
                 }
-            } catch (IOException e){
+            } catch (IOException e) {
                 shutdown();
             }
         }
@@ -72,6 +68,7 @@ public class Client implements Runnable {
     public static void main(String[] args) {
         Client client = new Client();
         client.run();
+        System.exit(0);
     }
 
 }
