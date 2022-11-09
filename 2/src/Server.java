@@ -71,7 +71,8 @@ public class Server implements Runnable {
         private PrintWriter out;
         private String username;
         private String password;
-        private boolean privilege;
+        //private boolean temp = false;
+        //private boolean privilege;
 
         public ConnectionHandler(Socket client) {
             this.client = client;
@@ -92,7 +93,7 @@ public class Server implements Runnable {
                         password = in.readLine();
                         if (password.equals("123")){
                             out.println("Permission Granted");
-                            privilege = true;
+                            //privilege = true;
                         } else {
                             out.println("Wrong password, try again");
                             username = null;
@@ -106,17 +107,20 @@ public class Server implements Runnable {
 
                 while (client.isConnected() && (message = in.readLine()) != null)  { // Is connected?
 
-                    if (privilege && message.startsWith("/ban")){
+                    if (username.equals("admin") && message.startsWith("/ban")){
                         String temp;
                         sendMessage("Enter user to ban: ");
                         temp = in.readLine();
 
                         for (ConnectionHandler ch : connections){
-                            if (ch.username.equals(temp)){
-                                ch.shutdown();
-                                connections.remove(ch);
-                            } else {
-                                out.println("User not found");
+                            if (ch.client.isConnected()){
+                                if (ch.username.equals(temp)){
+                                    connections.remove(ch);
+                                    ch.shutdown();
+                                    broadcast(temp + " was banned from the server");
+                                } else {
+                                    out.println("User not found");
+                                }
                             }
                         }
 
@@ -130,7 +134,6 @@ public class Server implements Runnable {
                         System.out.println(username + " disconnected");
                         connections.remove(this);
                         shutdown();
-                        break;
                     }
 
                     if (message.startsWith("/list")){
@@ -162,6 +165,20 @@ public class Server implements Runnable {
                 if (!client.isClosed()) {
                     client.close();
                 }
+            } catch (IOException ignored) {
+
+            }
+        }
+
+        public void disconnect(){
+            try {
+                in.close();
+                out.close();
+                if (!client.isClosed()) {
+                    client.close();
+                }
+
+
             } catch (IOException ignored) {
 
             }
